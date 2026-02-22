@@ -1,5 +1,4 @@
 name: Keep Render Awake
-
 on:
   schedule:
     - cron: "*/10 * * * *"   # Runs every 10 minutes
@@ -10,4 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render Backend
-        run: curl -X GET https://sribalafashion-backend.onrender.com/actuator/health
+        run: |
+          curl -X GET https://sribalafashion-backend.onrender.com/actuator/health \
+            --fail \
+            --silent \
+            --show-error \
+            --max-time 30
+          echo "Ping successful - Server is awake!"

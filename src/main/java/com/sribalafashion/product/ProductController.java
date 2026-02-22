@@ -2,11 +2,13 @@ package com.sribalafashion.product;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api")
@@ -15,15 +17,19 @@ public class ProductController {
 
     private final ProductService productService;
 
-    // Public Endpoints
+    // Public Endpoints — cached for 2 minutes by browser/CDN
     @GetMapping("/products")
-    public List<Product> getAllProducts(@RequestParam(required = false) String category) {
-        return productService.getAllProducts(category);
+    public ResponseEntity<List<Product>> getAllProducts(@RequestParam(required = false) String category) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(2, TimeUnit.MINUTES).cachePublic())
+                .body(productService.getAllProducts(category));
     }
 
     @GetMapping("/products/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(2, TimeUnit.MINUTES).cachePublic())
+                .body(productService.getProductById(id));
     }
 
     // Admin: view products (paginated)

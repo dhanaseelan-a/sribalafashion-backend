@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class UserController {
 
         @GetMapping("/users")
         @PreAuthorize("hasRole('ADMIN')")
+        @Transactional(readOnly = true)
         public ResponseEntity<?> listUsers(
                         @RequestParam(defaultValue = "0") int page,
                         @RequestParam(defaultValue = "10") int size) {
@@ -45,6 +47,7 @@ public class UserController {
 
         @PutMapping("/users/{id}/role")
         @PreAuthorize("hasRole('ADMIN')")
+        @Transactional
         public ResponseEntity<?> updateUserRole(@PathVariable Long id,
                         @RequestBody Map<String, String> body,
                         Authentication authentication) {
@@ -70,6 +73,7 @@ public class UserController {
 
         @DeleteMapping("/users/{id}")
         @PreAuthorize("hasRole('ADMIN')")
+        @Transactional
         public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication authentication) {
                 // Prevent self-deletion
                 String currentEmail = authentication.getName();

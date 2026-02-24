@@ -27,7 +27,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public Page<Product> getAllProductsPaginated(Pageable pageable) {
-        return productRepository.findAll(pageable);
+        return productRepository.findAllWithVariants(pageable);
     }
 
     @Transactional(readOnly = true)

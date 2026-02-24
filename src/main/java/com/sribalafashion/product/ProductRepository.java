@@ -1,5 +1,8 @@
 package com.sribalafashion.product;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -20,4 +23,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Fetch by category WITH size variants in a single query
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.sizeVariants WHERE p.category = :category")
     List<Product> findByCategoryWithVariants(String category);
+
+    // Admin: paginated products WITH size variants loaded (avoids
+    // LazyInitializationException)
+    @EntityGraph(attributePaths = { "sizeVariants" })
+    @Query("SELECT p FROM Product p")
+    Page<Product> findAllWithVariants(Pageable pageable);
 }

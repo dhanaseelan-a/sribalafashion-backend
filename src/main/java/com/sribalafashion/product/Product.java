@@ -45,7 +45,7 @@ public class Product {
     @Builder.Default
     private Integer discountPercent = 0;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProductSizeVariant> sizeVariants = new ArrayList<>();
 

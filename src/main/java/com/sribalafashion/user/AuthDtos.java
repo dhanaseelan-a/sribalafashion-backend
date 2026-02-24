@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 class GoogleAuthRequest {
 	@NotBlank
 	private String accessToken;
+	private String fullName;
 }
 
 @Data

@@ -20,9 +20,9 @@ public class ProductService {
     @Cacheable(value = "products", key = "#category ?: 'ALL'")
     public List<Product> getAllProducts(String category) {
         if (category != null && !category.isEmpty()) {
-            return productRepository.findByCategory(category);
+            return productRepository.findByCategoryWithVariants(category);
         }
-        return productRepository.findAll();
+        return productRepository.findAllWithVariants();
     }
 
     @Transactional(readOnly = true)
@@ -33,7 +33,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     @Cacheable(value = "product", key = "#id")
     public Product getProductById(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findByIdWithVariants(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 

@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -15,36 +14,34 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserRepository userRepository;
-    private final SupabaseAuthService supabaseAuthService;
 
     /**
      * Sync endpoint: called after Google OAuth login.
-     * The Supabase JWT is already verified by the JwtAuthenticationFilter.
-     * This endpoint ensures the user exists in our database and returns their info.
+     * The Supabase JWT is ALREADY verified by JwtAuthenticationFilter,
+     * so we just extract the email from the security context (no extra API call).
      */
     @PostMapping("/google")
-    public ResponseEntity<?> syncGoogleUser(@RequestBody GoogleAuthRequest request) {
-        // 1. Verify the Supabase access token via Supabase API (as extra validation)
-        Map<String, Object> userInfo = supabaseAuthService.verifyToken(request.getAccessToken());
-        if (userInfo == null) {
+    public ResponseEntity<?> syncGoogleUser(Authentication authentication,
+            @RequestBody GoogleAuthRequest request) {
+        // 1. JWT is already verified by JwtAuthenticationFilter — use security context
+        if (authentication == null) {
             return ResponseEntity.status(401)
-                    .body(new MessageResponse("Invalid or expired token"));
+                    .body(new MessageResponse("Not authenticated"));
         }
 
-        // 2. Extract email from verified user info
-        String email = supabaseAuthService.extractEmail(userInfo);
+        String email = authentication.getName();
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest()
                     .body(new MessageResponse("Could not extract email from token"));
         }
 
-        // 3. Extract full name
-        String fullName = supabaseAuthService.extractFullName(userInfo);
+        // 2. Extract full name from request body (frontend sends it)
+        String fullName = request.getFullName();
         if (fullName == null || fullName.isBlank()) {
             fullName = email.split("@")[0];
         }
 
-        // 4. Find or create user
+        // 3. Find or create user — single DB call
         Optional<User> existingUser = userRepository.findByEmail(email);
         User user;
         if (existingUser.isPresent()) {
@@ -58,7 +55,7 @@ public class AuthController {
             userRepository.save(user);
         }
 
-        // 5. Return user info (no custom JWT — frontend uses Supabase JWT directly)
+        // 4. Return user info
         return ResponseEntity.ok(new UserInfoResponse(
                 user.getEmail(),
                 user.getRole().name(),
